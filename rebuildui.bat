@@ -1,0 +1,1 @@
+uic widget.ui -o ui_widget.h
