@@ -1,6 +1,6 @@
 QT       += core gui sql
 
-RC_ICONS = alantop.ico
+RC_ICONS = my.ico
 
 greaterThan(QT_MAJOR_VERSION, 5): QT += core5compat
 
