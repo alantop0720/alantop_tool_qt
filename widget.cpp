@@ -19,6 +19,9 @@
 
 #include <QDesktopServices>
 
+#include <QFileDialog>
+
+
 
 class QDetachableProcess
         : public QProcess {
@@ -679,5 +682,153 @@ void Widget::on_pushButton_del_clicked()
     }
 
     querytype(ui->lineEdit_type->text());
+}
+
+
+void Widget::on_pushButton_import_clicked()
+{
+    QString strText;
+    QModelIndexList indexList = ui->listView->selectionModel()->selectedIndexes();
+    if (!indexList.isEmpty())
+    {
+        QModelIndex index = indexList.first();
+        strText = index.data(Qt::DisplayRole).toString();
+        qDebug() << "The selected text is: " << strText;
+
+
+    }
+    else
+    {
+        QMessageBox::information(this, tr("提示"), tr("未选中导出的分类"));
+        return;
+
+    }
+
+    QString sql = "SELECT * FROM app WHERE type = '";
+    sql.append(strText);
+    sql.append("'");
+
+
+    QSqlQuery query;
+    query.prepare(sql);
+    query.exec();
+
+    // 创建csv文件
+    QFile csvFile(strText.append(".txt"));
+    if (!csvFile.open(QIODevice::WriteOnly | QIODevice::Text))
+        return;
+
+    // 写入csv文件头
+    QTextStream out(&csvFile);
+    QStringList strList;
+
+    while(query.next())
+    {
+        strList.append(query.value(1).toString());
+        //strList.join(",");
+        strList.append(query.value(2).toString());
+        //strList.append(",");
+        strList.append(query.value(3).toString());
+        //strList.append(",");
+        strList.append(query.value(4).toString());
+        //strList.append(",");
+        strList.append(query.value(5).toString());
+        //strList.append(",");
+        //out << strList.join("\n");
+
+
+    }
+
+    out << strList.join('\n');
+
+
+
+
+
+    csvFile.close();
+
+    QMessageBox::information(this, strText, tr("导出成功！"));
+
+
+}
+
+
+void Widget::on_pushButton_export_clicked()
+{
+    //从文本文件导入数据库
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
+                                                    "/home",
+                                                    tr("Text Files (*.txt)"));//按行读取文件
+
+
+    QFile file(fileName);
+    if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qDebug() << "Open failed.";
+    }
+    QTextStream txtInput(&file);
+    while(!txtInput.atEnd())
+    {
+        QString value1 = txtInput.readLine();
+        QString value2 = txtInput.readLine();
+        QString value3 = txtInput.readLine();
+        QString value4 = txtInput.readLine();
+        QString value5 = txtInput.readLine();
+        //插入sqlite
+        QSqlQuery query;
+        query.prepare("INSERT INTO app(name, filename, path, type, remark) VALUES(?, ?, ?, ?, ?)");
+        query.addBindValue(value1);
+        query.addBindValue(value2);
+        query.addBindValue(value3);
+        query.addBindValue(value4);
+        query.addBindValue(value5);
+        query.exec();
+    }
+    file.close();
+
+    QMessageBox::information(this, "提示", tr("导入完成！"));
+}
+
+
+void Widget::on_pushButton_deltype_clicked()
+{
+    //删除分类代码
+
+    if (QMessageBox::question(this, "info", "是要选择删除的分类吗？", QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
+    {
+        return;
+    }
+
+    QString strText;
+    QModelIndexList indexList = ui->listView->selectionModel()->selectedIndexes();
+    if (!indexList.isEmpty())
+    {
+        QModelIndex index = indexList.first();
+        strText = index.data(Qt::DisplayRole).toString();
+        qDebug() << "The selected text is: " << strText;
+
+
+    }
+    else
+    {
+        QMessageBox::information(this, tr("提示"), tr("未选中导出的分类"));
+        return;
+
+    }
+
+    //QSqlQuery query;
+    //query.prepare("delete from tableName where id= ?");
+    //query.addBindValue("5");
+    //query.exec();
+
+
+    QSqlQuery query;
+    query.prepare("DELETE FROM app WHERE type = :type");
+    query.bindValue(":type", strText);
+    bool result = query.exec();
+    qDebug() << "result: " << result;
+
+    QMessageBox::information(this, "提示", tr("删除选择的分类！"));
+
 }
 

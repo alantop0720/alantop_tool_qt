@@ -47,6 +47,12 @@ private slots:
 
     void on_tableView_doubleClicked(const QModelIndex &index);
 
+    void on_pushButton_import_clicked();
+
+    void on_pushButton_export_clicked();
+
+    void on_pushButton_deltype_clicked();
+
 private:
     Ui::Widget *ui;
 

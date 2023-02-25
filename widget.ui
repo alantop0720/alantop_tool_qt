@@ -209,6 +209,27 @@
              </property>
             </widget>
            </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_import">
+             <property name="text">
+              <string>导出分类</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_export">
+             <property name="text">
+              <string>导入分类</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_deltype">
+             <property name="text">
+              <string>删除分类</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </item>
         </layout>
