@@ -320,6 +320,208 @@ void Widget::on_pushButton_insert_clicked()
 
 void Widget::on_tableView_clicked(const QModelIndex &index)
 {
+    //左键点击 显示
+
+    //读取数据到lineedit控件
+    QAbstractItemModel *Imodel=ui->tableView->model();
+    QModelIndex Iindex ;
+    QVariant datatemp;
+    QString name;
+
+
+    Iindex = Imodel->index(index.row(),0);//index.row()为算选择的行号。1为所选中行的第一列。。
+    datatemp=Imodel->data(Iindex);
+    name=datatemp.toString();//name即为所选择行的第一列的值。。。
+    ui->lineEdit_id->setText(name);
+
+    Iindex = Imodel->index(index.row(),1);//index.row()为算选择的行号。1为所选中行的第一列。。
+    datatemp=Imodel->data(Iindex);
+    name=datatemp.toString();//name即为所选择行的第一列的值。。。
+    ui->lineEdit_name->setText(name);
+
+
+    Iindex = Imodel->index(index.row(),2);//index.row()为算选择的行号。1为所选中行的第一列。。
+    datatemp=Imodel->data(Iindex);
+    name=datatemp.toString();//name即为所选择行的第一列的值。。。
+    ui->lineEdit_filename->setText(name);
+
+
+
+    Iindex = Imodel->index(index.row(),3);//index.row()为算选择的行号。1为所选中行的第一列。。
+    datatemp=Imodel->data(Iindex);
+    name=datatemp.toString();//name即为所选择行的第一列的值。。。
+    ui->lineEdit_path->setText(name);
+    QString app_path = name;
+
+    Iindex = Imodel->index(index.row(),4);//index.row()为算选择的行号。1为所选中行的第一列。。
+    datatemp=Imodel->data(Iindex);
+    name=datatemp.toString();//name即为所选择行的第一列的值。。。
+    ui->lineEdit_type->setText(name);
+
+    Iindex = Imodel->index(index.row(),5);//index.row()为算选择的行号。1为所选中行的第一列。。
+    datatemp=Imodel->data(Iindex);
+    name=datatemp.toString();//name即为所选择行的第一列的值。。。
+    ui->lineEdit_remark->setText(name);
+
+
+
+
+
+    QFileInfo fileInfo(app_path);
+    if(!fileInfo.isFile())
+    {
+        ui->label_info->setText("文件不存在");
+        return;
+    }
+
+
+
+}
+
+
+void Widget::on_pushButton_modify_clicked()
+{
+    QDateTime curDateTime=QDateTime::currentDateTime();
+    QSqlQuery query;
+    int id = ui->lineEdit_id->text().toInt();
+    if (0 == id)
+    {
+        ui->label_info->setText("id为空."+ curDateTime.toString("yyyy-MM-dd hh:mm:ss") );
+        return;
+    }
+
+    QString name = ui->lineEdit_name->text();
+    QString filename = ui->lineEdit_filename->text();
+    QString path = ui->lineEdit_path->text();
+    QString type = ui->lineEdit_type->text();
+    QString remark = ui->lineEdit_remark->text();
+
+    //如果有引号，需要引号替换功能 加转义符
+
+    QString str = QString("update app set name = '%1', filename ='%2',path='%3',type='%4', remark='%5' where id=%6").arg(name).arg(filename).arg(path).arg(type).arg(remark).arg(id);
+
+    if (query.exec(str) == false)
+    {
+        qDebug() << str ;
+
+        ui->label_info->setText("更新失败\n" + str + curDateTime.toString("yyyy-MM-dd hh:mm:ss"));
+        //ui->label_info->setText("更新失败");
+
+    }
+    else
+    {
+        qDebug() << "update ok " ;
+        ui->label_info->setText("update ok."+ curDateTime.toString("yyyy-MM-dd hh:mm:ss") );
+    }
+
+    querytype(ui->lineEdit_type->text());
+
+}
+
+
+void Widget::on_pushButton_2_clicked()
+{
+    QDateTime curDateTime=QDateTime::currentDateTime();
+
+
+    if (QMessageBox::question(this,"info","请确认旧目录和新目录，确认是否更新程序目录，are you ok?", QMessageBox::Yes|QMessageBox::No) == QMessageBox::No)
+    {
+        ui->label_info->setText("no update. "+ curDateTime.toString("yyyy-MM-dd hh:mm:ss") );
+        return;
+    }
+
+    //query.exec("select * from app");
+    QSqlQuery query;
+
+    if (!query.exec(ui->lineEdit_newdir->text()))
+    {
+        //ui->label_info->setText("update new dir ok."+ curDateTime.toString("yyyy-MM-dd hh:mm:ss") );
+
+        ui->label_info->setText(query.lastError().text());
+        qDebug () << "sql errror" <<  query.lastError();
+    }
+
+    ui->label_info->setText("update new dir ok."+ curDateTime.toString("yyyy-MM-dd hh:mm:ss") );
+
+
+
+}
+
+
+void Widget::on_pushButton_path_clicked()
+{
+
+
+    QString path = ui->lineEdit_path->text();
+
+    QFileInfo fi(path);
+
+    qDebug() << fi.canonicalPath() ;
+
+    QDesktopServices::openUrl(QUrl::fromLocalFile(fi.canonicalPath()));
+}
+
+
+void Widget::slotContextMenu(QPoint pos)
+{
+    qDebug() << "right" ;
+    QModelIndex index = ui->tableView->indexAt(pos);
+
+    if (index.isValid())
+    {
+        //读取数据到lineedit控件
+        QAbstractItemModel *Imodel=ui->tableView->model();
+        QModelIndex Iindex = Imodel->index(index.row(),1);//index.row()为算选择的行号。1为所选中行的第一列。。
+        QVariant datatemp=Imodel->data(Iindex);
+        QString name=datatemp.toString();//name即为所选择行的第一列的值。。。
+        qDebug() << name;
+        ui->lineEdit_name->setText(name);
+
+        Iindex = Imodel->index(index.row(),0);//index.row()为算选择的行号。1为所选中行的第一列。。
+        datatemp=Imodel->data(Iindex);
+        name=datatemp.toString();//name即为所选择行的第一列的值。。。
+        ui->lineEdit_id->setText(name);
+
+        Iindex = Imodel->index(index.row(),1);//index.row()为算选择的行号。1为所选中行的第一列。。
+        datatemp=Imodel->data(Iindex);
+        name=datatemp.toString();//name即为所选择行的第一列的值。。。
+        ui->lineEdit_name->setText(name);
+
+
+        Iindex = Imodel->index(index.row(),2);//index.row()为算选择的行号。1为所选中行的第一列。。
+        datatemp=Imodel->data(Iindex);
+        name=datatemp.toString();//name即为所选择行的第一列的值。。。
+        ui->lineEdit_filename->setText(name);
+
+
+
+        Iindex = Imodel->index(index.row(),3);//index.row()为算选择的行号。1为所选中行的第一列。。
+        datatemp=Imodel->data(Iindex);
+        name=datatemp.toString();//name即为所选择行的第一列的值。。。
+        ui->lineEdit_path->setText(name);
+        QString app_path = name;
+
+        Iindex = Imodel->index(index.row(),4);//index.row()为算选择的行号。1为所选中行的第一列。。
+        datatemp=Imodel->data(Iindex);
+        name=datatemp.toString();//name即为所选择行的第一列的值。。。
+        ui->lineEdit_type->setText(name);
+
+        Iindex = Imodel->index(index.row(),5);//index.row()为算选择的行号。1为所选中行的第一列。。
+        datatemp=Imodel->data(Iindex);
+        name=datatemp.toString();//name即为所选择行的第一列的值。。。
+        ui->lineEdit_remark->setText(name);
+    }
+
+}
+
+
+
+
+
+void Widget::on_tableView_doubleClicked(const QModelIndex &index)
+{
+    //左键双击 启动程序
+
     //读取数据到lineedit控件
     QAbstractItemModel *Imodel=ui->tableView->model();
     QModelIndex Iindex ;
@@ -477,145 +679,5 @@ void Widget::on_pushButton_del_clicked()
     }
 
     querytype(ui->lineEdit_type->text());
-
 }
-
-
-void Widget::on_pushButton_modify_clicked()
-{
-    QDateTime curDateTime=QDateTime::currentDateTime();
-    QSqlQuery query;
-    int id = ui->lineEdit_id->text().toInt();
-    if (0 == id)
-    {
-        ui->label_info->setText("id为空."+ curDateTime.toString("yyyy-MM-dd hh:mm:ss") );
-        return;
-    }
-
-    QString name = ui->lineEdit_name->text();
-    QString filename = ui->lineEdit_filename->text();
-    QString path = ui->lineEdit_path->text();
-    QString type = ui->lineEdit_type->text();
-    QString remark = ui->lineEdit_remark->text();
-
-    //如果有引号，需要引号替换功能 加转义符
-
-    QString str = QString("update app set name = '%1', filename ='%2',path='%3',type='%4', remark='%5' where id=%6").arg(name).arg(filename).arg(path).arg(type).arg(remark).arg(id);
-
-    if (query.exec(str) == false)
-    {
-        qDebug() << str ;
-
-        ui->label_info->setText("更新失败\n" + str + curDateTime.toString("yyyy-MM-dd hh:mm:ss"));
-        //ui->label_info->setText("更新失败");
-
-    }
-    else
-    {
-        qDebug() << "update ok " ;
-        ui->label_info->setText("update ok."+ curDateTime.toString("yyyy-MM-dd hh:mm:ss") );
-    }
-
-    querytype(ui->lineEdit_type->text());
-
-}
-
-
-void Widget::on_pushButton_2_clicked()
-{
-    QDateTime curDateTime=QDateTime::currentDateTime();
-
-
-    if (QMessageBox::question(this,"info","请确认旧目录和新目录，确认是否更新程序目录，are you ok?", QMessageBox::Yes|QMessageBox::No) == QMessageBox::No)
-    {
-        ui->label_info->setText("no update. "+ curDateTime.toString("yyyy-MM-dd hh:mm:ss") );
-        return;
-    }
-
-    //query.exec("select * from app");
-    QSqlQuery query;
-
-    if (!query.exec(ui->lineEdit_newdir->text()))
-    {
-        //ui->label_info->setText("update new dir ok."+ curDateTime.toString("yyyy-MM-dd hh:mm:ss") );
-
-        ui->label_info->setText(query.lastError().text());
-        qDebug () << "sql errror" <<  query.lastError();
-    }
-
-    ui->label_info->setText("update new dir ok."+ curDateTime.toString("yyyy-MM-dd hh:mm:ss") );
-
-
-
-}
-
-
-void Widget::on_pushButton_path_clicked()
-{
-
-
-    QString path = ui->lineEdit_path->text();
-
-    QFileInfo fi(path);
-
-    qDebug() << fi.canonicalPath() ;
-
-    QDesktopServices::openUrl(QUrl::fromLocalFile(fi.canonicalPath()));
-}
-
-
-void Widget::slotContextMenu(QPoint pos)
-{
-    qDebug() << "right" ;
-    QModelIndex index = ui->tableView->indexAt(pos);
-
-    if (index.isValid())
-    {
-        //读取数据到lineedit控件
-        QAbstractItemModel *Imodel=ui->tableView->model();
-        QModelIndex Iindex = Imodel->index(index.row(),1);//index.row()为算选择的行号。1为所选中行的第一列。。
-        QVariant datatemp=Imodel->data(Iindex);
-        QString name=datatemp.toString();//name即为所选择行的第一列的值。。。
-        qDebug() << name;
-        ui->lineEdit_name->setText(name);
-
-        Iindex = Imodel->index(index.row(),0);//index.row()为算选择的行号。1为所选中行的第一列。。
-        datatemp=Imodel->data(Iindex);
-        name=datatemp.toString();//name即为所选择行的第一列的值。。。
-        ui->lineEdit_id->setText(name);
-
-        Iindex = Imodel->index(index.row(),1);//index.row()为算选择的行号。1为所选中行的第一列。。
-        datatemp=Imodel->data(Iindex);
-        name=datatemp.toString();//name即为所选择行的第一列的值。。。
-        ui->lineEdit_name->setText(name);
-
-
-        Iindex = Imodel->index(index.row(),2);//index.row()为算选择的行号。1为所选中行的第一列。。
-        datatemp=Imodel->data(Iindex);
-        name=datatemp.toString();//name即为所选择行的第一列的值。。。
-        ui->lineEdit_filename->setText(name);
-
-
-
-        Iindex = Imodel->index(index.row(),3);//index.row()为算选择的行号。1为所选中行的第一列。。
-        datatemp=Imodel->data(Iindex);
-        name=datatemp.toString();//name即为所选择行的第一列的值。。。
-        ui->lineEdit_path->setText(name);
-        QString app_path = name;
-
-        Iindex = Imodel->index(index.row(),4);//index.row()为算选择的行号。1为所选中行的第一列。。
-        datatemp=Imodel->data(Iindex);
-        name=datatemp.toString();//name即为所选择行的第一列的值。。。
-        ui->lineEdit_type->setText(name);
-
-        Iindex = Imodel->index(index.row(),5);//index.row()为算选择的行号。1为所选中行的第一列。。
-        datatemp=Imodel->data(Iindex);
-        name=datatemp.toString();//name即为所选择行的第一列的值。。。
-        ui->lineEdit_remark->setText(name);
-    }
-
-}
-
-
-
 

@@ -45,6 +45,8 @@ private slots:
 
     void slotContextMenu(QPoint pos);
 
+    void on_tableView_doubleClicked(const QModelIndex &index);
+
 private:
     Ui::Widget *ui;
 
