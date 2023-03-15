@@ -828,7 +828,10 @@ void Widget::on_pushButton_deltype_clicked()
     bool result = query.exec();
     qDebug() << "result: " << result;
 
-    QMessageBox::information(this, "提示", tr("删除选择的分类！"));
+    QMessageBox::information(this, "提示", tr("选择的分类已删除！"));
+    on_pushButton_clicked();
+
+
 
 }
 
