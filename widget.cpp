@@ -835,3 +835,9 @@ void Widget::on_pushButton_deltype_clicked()
 
 }
 
+
+void Widget::on_lineEdit_search_textChanged(const QString &arg1)
+{
+    on_pushButton_clicked();
+}
+
