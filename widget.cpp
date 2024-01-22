@@ -21,6 +21,10 @@
 
 #include <QFileDialog>
 
+#include <QDateTime>
+
+#pragma execution_character_set("utf-8")
+
 
 
 class QDetachableProcess
