@@ -55,6 +55,8 @@ private slots:
 
     void on_lineEdit_search_textChanged(const QString &arg1);
 
+
+
 private:
     Ui::Widget *ui;
 

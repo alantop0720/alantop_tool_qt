@@ -61,7 +61,7 @@ Widget::Widget(QWidget *parent)
 
     setAcceptDrops(true);
 
-    setWindowTitle("alantop_tool");
+    setWindowTitle("alantop_tool_qt5 2024.10.07");
 
     ui->lineEdit_newdir->setText("UPDATE app SET path = REPLACE(path, 'D:/alantop_dir/Alantop_Tool/Tools/', 'd:/newdir/') WHERE id = 105");
 
@@ -182,21 +182,26 @@ void Widget::on_pushButton_clicked()
     query(ui->lineEdit_search->text());
 }
 
-
+// 左边 点击 查询类型
 void Widget::showClick(QModelIndex index)
 {
     QString strTemp;
     strTemp = index.data().toString();
 
+    //ui->lineEdit_type->setText(strTemp);
 
-    ui->lineEdit_type->setText(strTemp);
+    //querytype(strTemp);
 
-    //    ui->lineEdit_id->setText("");
-    //    ui->lineEdit_title->setText("");
-    //    ui->lineEdit_count->setText("");
+    QSqlQuery query;
+    QString str = QString("select * from app where type == '%1' ").arg(strTemp);
+    model.setQuery(str);
+    ui->tableView->setModel(&model);
 
+    ui->tableView->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(1,QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(5,QHeaderView::ResizeToContents);
 
-    querytype(strTemp);
+    ui->label_info->setText(str);
 
 
 
@@ -319,6 +324,8 @@ void Widget::on_pushButton_insert_clicked()
         ui->label_info->setText("insert ok " +  curDateTime.toString("yyyy-MM-dd hh:mm:ss"));
     }
 
+    initleft();
+
     querytype(ui->lineEdit_type->text());
 
 
@@ -421,6 +428,8 @@ void Widget::on_pushButton_modify_clicked()
         ui->label_info->setText("update ok."+ curDateTime.toString("yyyy-MM-dd hh:mm:ss") );
     }
 
+    initleft();
+
     querytype(ui->lineEdit_type->text());
 
 }
@@ -461,11 +470,20 @@ void Widget::on_pushButton_path_clicked()
 
     QString path = ui->lineEdit_path->text();
 
-    QFileInfo fi(path);
+    QDir dir(path);
+    if (dir.exists()) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+    } else {
+        QFileInfo fi(path);
 
-    qDebug() << fi.canonicalPath() ;
+        qDebug() << fi.canonicalPath() ;
 
-    QDesktopServices::openUrl(QUrl::fromLocalFile(fi.canonicalPath()));
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fi.canonicalPath()));
+    }
+
+
+
+
 }
 
 
@@ -571,94 +589,132 @@ void Widget::on_tableView_doubleClicked(const QModelIndex &index)
     ui->lineEdit_remark->setText(name);
 
 
+    QString path = ui->lineEdit_path->text();
+
+    QDir dir(path);
+    if (dir.exists()) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+    } else {
+        QFileInfo fileInfo(app_path);
+        if(!fileInfo.isFile())
+        {
+            ui->label_info->setText("文件不存在");
+            return;
+        }
 
 
 
-    QFileInfo fileInfo(app_path);
-    if(!fileInfo.isFile())
-    {
-        ui->label_info->setText("文件不存在");
-        return;
+        QProcess *myProcess = new QProcess(this);
+
+        QFileInfo fileinfo = QFileInfo(app_path);
+
+        QString filepath = fileinfo.absolutePath();
+
+
+        QDir dir(filepath);
+        if(!dir.exists())
+        {
+
+            ui->label_info->setStyleSheet("color:red;");
+            ui->label_info->setText("路径不存在");
+            return ;
+        }
+
+        qDebug() << QDir::currentPath();
+
+        qDebug() << "filepath = " << filepath;
+
+        //        qDebug() << "workingDirectory=" ;
+
+        //        qDebug() << myProcess->workingDirectory();
+
+        //        myProcess->setWorkingDirectory(filepath);
+
+        //        qDebug() << "workingDirectory=" << myProcess->workingDirectory();
+
+        //        QMessageBox msgBox1;
+        //        msgBox1.setText(myProcess->workingDirectory());
+        //        msgBox1.exec();
+
+
+        QString oldCurrent = QDir::currentPath();
+        QDir::setCurrent(filepath);
+
+        qDebug() << "oldCurrent=" << oldCurrent;
+
+
+
+        //         QMessageBox msgBox;
+        //         msgBox.setText(QDir::currentPath());
+        //         msgBox.exec();
+
+
+        qDebug() << QDir::currentPath();
+
+        //转斜杠的方法
+        //QString cmd =QDir::fromNativeSeparators("d:\\1 1\\中文.exe");
+        //qDebug()<<cmd;
+
+        qDebug() << "app_path" + app_path;
+
+        if (app_path.length() >= 4) {
+            QString suffix = app_path.right(4);
+            if (suffix == ".bat") {
+                bool opened = QDesktopServices::openUrl(app_path);
+            } else {
+                QString cmd = "\"" + app_path + "\"";
+                qDebug() << cmd;
+                myProcess->startDetached(cmd);
+
+            }
+        } else {
+            qDebug() << "app_path 的长度不足 4，无法判断后四个字符是否为.bat";
+        }
+
+
+
+
+        //        qDebug() << "processEnvironment ="<<(myProcess->processEnvironment()).toStringList();
+
+        //        //QProcess process;
+        //        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        //        env.insert("path",  filepath); // Add an environment variable
+        //        myProcess->setProcessEnvironment(env);
+        //        //process.start("myapp");
+
+        //        QStringList list = (myProcess->processEnvironment()).toStringList();
+        //        qDebug() << "list.size=" << list.size();
+
+        //        for(int i = 0; i< list.size();++i)
+        //        {
+        //            QString tmp = list.at(i);
+        //            qDebug()<<"tmp ="<< i << tmp;
+        //        }
+
+
+
+
+
+        qDebug() << "setCurrent=" << QDir::setCurrent(oldCurrent);
+
+
     }
 
 
 
-    QProcess *myProcess = new QProcess(this);
-
-    QFileInfo fileinfo = QFileInfo(app_path);
-
-    QString filepath = fileinfo.absolutePath();
-
-
-    QDir dir(filepath);
-    if(!dir.exists())
-    {
-
-        ui->label_info->setStyleSheet("color:red;");
-        ui->label_info->setText("路径不存在");
-        return ;
-    }
-
-    qDebug() << QDir::currentPath();
-
-    qDebug() << "filepath = " << filepath;
-
-    //        qDebug() << "workingDirectory=" ;
-
-    //        qDebug() << myProcess->workingDirectory();
-
-    //        myProcess->setWorkingDirectory(filepath);
-
-    //        qDebug() << "workingDirectory=" << myProcess->workingDirectory();
-
-    //        QMessageBox msgBox1;
-    //        msgBox1.setText(myProcess->workingDirectory());
-    //        msgBox1.exec();
+/*
+ * 上面的代码不是没有执行,而是在后台执行了.输出都在debug了.界面看不出来了.
+ *
+    命令行执行方法
+     QUrl url = QUrl::fromLocalFile("D:/mygit/bsjy/ip_adb/install.bat");
+     bool opened = QDesktopServices::openUrl(url);
+     if (!opened)
+     {
+         qDebug() << "无法打开快捷方式文件。";
+     }
+ */
 
 
-    QString oldCurrent = QDir::currentPath();
-    QDir::setCurrent(filepath);
-
-    qDebug() << "oldCurrent=" << oldCurrent;
-
-
-
-    //         QMessageBox msgBox;
-    //         msgBox.setText(QDir::currentPath());
-    //         msgBox.exec();
-
-
-    qDebug() << QDir::currentPath();
-
-    //转斜杠的方法
-    //QString cmd =QDir::fromNativeSeparators("d:\\1 1\\中文.exe");
-    //qDebug()<<cmd;
-
-    QString cmd = "\"" + app_path + "\"";
-    qDebug() << cmd;
-
-    //        qDebug() << "processEnvironment ="<<(myProcess->processEnvironment()).toStringList();
-
-    //        //QProcess process;
-    //        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-    //        env.insert("path",  filepath); // Add an environment variable
-    //        myProcess->setProcessEnvironment(env);
-    //        //process.start("myapp");
-
-    //        QStringList list = (myProcess->processEnvironment()).toStringList();
-    //        qDebug() << "list.size=" << list.size();
-
-    //        for(int i = 0; i< list.size();++i)
-    //        {
-    //            QString tmp = list.at(i);
-    //            qDebug()<<"tmp ="<< i << tmp;
-    //        }
-
-
-
-    myProcess->startDetached(cmd);
-
-    qDebug() << "setCurrent=" << QDir::setCurrent(oldCurrent);
 }
 
 
@@ -684,6 +740,8 @@ void Widget::on_pushButton_del_clicked()
         qDebug() << "delete ok";
         ui->label_info->setText("delete ok");
     }
+
+    initleft();
 
     querytype(ui->lineEdit_type->text());
 }
@@ -837,6 +895,8 @@ void Widget::on_pushButton_deltype_clicked()
 
 
 
+
+
 }
 
 
@@ -844,4 +904,7 @@ void Widget::on_lineEdit_search_textChanged(const QString &arg1)
 {
     on_pushButton_clicked();
 }
+
+
+
 
