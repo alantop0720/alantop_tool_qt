@@ -36,6 +36,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="pushButton_usual">
+       <property name="text">
+        <string>常用</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="pushButton_notexist">
        <property name="text">
         <string>本机不存在的应用</string>

@@ -50,6 +50,7 @@ Widget::Widget(QWidget *parent)
 
 
     initdb();
+    checkFilesAndUpdateExistField();
 
 
 
@@ -154,7 +155,7 @@ void Widget::initdb()
     //        qDebug() << query.value(0).toInt() << query.value(1).toString();
     //    }
 
-    checkFilesAndUpdateExistField();
+
 
 }
 
@@ -576,6 +577,43 @@ void Widget::slotContextMenu(QPoint pos)
 
 }
 
+int Widget::add_clicknumber(QString id)
+{
+    // 根据给定的id查询获取当前的clicknumber值
+    QSqlQuery query(db);
+    query.prepare("SELECT clicknumber FROM app WHERE id = :id");
+    query.bindValue(":id", id);
+    if (!query.exec()) {
+        qDebug() << "查询失败: " << query.lastError().text();
+                                       // db.close();
+        return -1;
+    }
+
+    int currentClickNumber;
+    if (query.next()) {
+    currentClickNumber = query.value(0).toInt();
+    } else {
+        qDebug() << "未找到符合条件的数据（给定id对应的记录不存在）";
+        //db.close();
+        return -1;
+    }
+
+    // 将clicknumber值加1
+    currentClickNumber++;
+
+    // 根据id更新数据库中的clicknumber值
+    query.prepare("UPDATE app SET clicknumber = :newClickNumber WHERE id = :id");
+    query.bindValue(":newClickNumber", currentClickNumber);
+    query.bindValue(":id", id);
+    if (!query.exec()) {
+        qDebug() << "更新失败: " << query.lastError().text();
+                                        //db.close();
+        return -1;
+    }
+
+    return 0;
+}
+
 
 
 
@@ -595,6 +633,8 @@ void Widget::on_tableView_doubleClicked(const QModelIndex &index)
     datatemp=Imodel->data(Iindex);
     name=datatemp.toString();//name即为所选择行的第一列的值。。。
     ui->lineEdit_id->setText(name);
+
+    add_clicknumber(name);
 
     Iindex = Imodel->index(index.row(),1);//index.row()为算选择的行号。1为所选中行的第一列。。
     datatemp=Imodel->data(Iindex);
@@ -733,6 +773,8 @@ void Widget::on_tableView_doubleClicked(const QModelIndex &index)
 
 
         qDebug() << "setCurrent=" << QDir::setCurrent(oldCurrent);
+
+
 
 
     }
@@ -962,5 +1004,22 @@ void Widget::on_pushButton_notexist_clicked()
             ui->tableView->horizontalHeader()->setSectionResizeMode(5,QHeaderView::ResizeToContents);
 
 
+}
+
+
+void Widget::on_pushButton_usual_clicked()
+{
+            initleft();
+
+
+            QSqlQuery query;
+            QString str = QString("SELECT * FROM app ORDER BY clicknumber desc");
+            model.setQuery(str);
+            ui->tableView->setModel(&model);
+
+
+            ui->tableView->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
+            ui->tableView->horizontalHeader()->setSectionResizeMode(1,QHeaderView::ResizeToContents);
+            ui->tableView->horizontalHeader()->setSectionResizeMode(5,QHeaderView::ResizeToContents);
 }
 

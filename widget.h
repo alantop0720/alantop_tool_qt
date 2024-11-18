@@ -59,6 +59,8 @@ private slots:
 
     void on_pushButton_notexist_clicked();
 
+    void on_pushButton_usual_clicked();
+
 private:
     Ui::Widget *ui;
 
@@ -72,6 +74,7 @@ private:
 
     void initdb();
     void checkFilesAndUpdateExistField();
+    int add_clicknumber(QString id);
 
 
 
