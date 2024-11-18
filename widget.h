@@ -57,6 +57,8 @@ private slots:
 
 
 
+    void on_pushButton_notexist_clicked();
+
 private:
     Ui::Widget *ui;
 
@@ -69,6 +71,7 @@ private:
 
 
     void initdb();
+    void checkFilesAndUpdateExistField();
 
 
 

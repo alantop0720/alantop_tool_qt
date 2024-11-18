@@ -90,6 +90,41 @@ Widget::~Widget()
     delete ui;
 }
 
+void Widget::checkFilesAndUpdateExistField()
+{
+
+
+
+    QSqlQuery query(db);
+    // 查询表中的所有记录
+    if (!query.exec("SELECT * FROM app")) {
+        qDebug() << "查询失败: " << query.lastError().text();
+                                        return;
+    }
+
+    while (query.next()) {
+        QString path = query.value("path").toString();
+        QFile file(path);
+        bool fileExists = file.exists();
+
+        QSqlQuery updateQuery(db);
+
+        QString updateSql;
+
+        // 根据文件是否存在更新 exist 字段的值
+        if (!fileExists)
+            updateSql = QString("UPDATE app SET exist = 0 WHERE path = '%1'").arg(path);
+        else
+            updateSql = QString("UPDATE app SET exist = 1 WHERE path = '%1'").arg(path);
+
+
+
+
+        if (!updateQuery.exec(updateSql)) {
+            qDebug() << "更新 exist 字段失败: " << updateQuery.lastError().text();
+        }
+    }
+}
 
 void Widget::initdb()
 {
@@ -118,6 +153,8 @@ void Widget::initdb()
     //    {
     //        qDebug() << query.value(0).toInt() << query.value(1).toString();
     //    }
+
+    checkFilesAndUpdateExistField();
 
 }
 
@@ -907,4 +944,23 @@ void Widget::on_lineEdit_search_textChanged(const QString &arg1)
 
 
 
+
+
+void Widget::on_pushButton_notexist_clicked()
+{
+    initleft();
+
+
+            QSqlQuery query;
+            QString str = QString("select * from app where exist = 0");
+            model.setQuery(str);
+            ui->tableView->setModel(&model);
+
+
+            ui->tableView->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
+            ui->tableView->horizontalHeader()->setSectionResizeMode(1,QHeaderView::ResizeToContents);
+            ui->tableView->horizontalHeader()->setSectionResizeMode(5,QHeaderView::ResizeToContents);
+
+
+}
 

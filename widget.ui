@@ -35,6 +35,13 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_notexist">
+       <property name="text">
+        <string>本机不存在的应用</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
