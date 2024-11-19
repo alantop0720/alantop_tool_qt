@@ -62,7 +62,7 @@ Widget::Widget(QWidget *parent)
 
     setAcceptDrops(true);
 
-    setWindowTitle("alantop_tool_qt5 2024.10.07");
+    setWindowTitle("alantop_tool_qt5 2024.11.19");
 
     ui->lineEdit_newdir->setText("UPDATE app SET path = REPLACE(path, 'D:/alantop_dir/Alantop_Tool/Tools/', 'd:/newdir/') WHERE id = 105");
 
@@ -83,6 +83,10 @@ Widget::Widget(QWidget *parent)
     ui->label_info->setPalette(label_palette);
     QFont font ( "Microsoft YaHei", 10, 75); //第一个属性是字体（微软雅黑），第二个是大小，第三个是加粗（权重是75）
     ui->label_info->setFont(font);
+
+
+    model.setHeaderData(6, Qt::Horizontal, "存在否");
+    model.setHeaderData(7, Qt::Horizontal, "使用次数");
 }
 
 Widget::~Widget()
@@ -250,7 +254,7 @@ void Widget::showClick(QModelIndex index)
 void Widget::query(QString search)
 {
     QSqlQuery query;
-    QString str = QString("select * from app where type like '%%1%' or name like '%%1%' or filename like '%%1%' or path like '%%1%' or remark like '%%1%' ").arg(search);
+    QString str = QString("select * from app where type like '%%1%' or name like '%%1%' or filename like '%%1%' or path like '%%1%' or remark like '%%1%' ORDER BY clicknumber desc").arg(search);
     model.setQuery(str);
     ui->tableView->setModel(&model);
 
@@ -415,6 +419,12 @@ void Widget::on_tableView_clicked(const QModelIndex &index)
     name=datatemp.toString();//name即为所选择行的第一列的值。。。
     ui->lineEdit_remark->setText(name);
 
+    Iindex = Imodel->index(index.row(),7);
+    datatemp=Imodel->data(Iindex);
+    name=datatemp.toString();
+    ui->lineEdit_clicknumber->setText(name);
+
+
 
 
 
@@ -447,10 +457,11 @@ void Widget::on_pushButton_modify_clicked()
     QString path = ui->lineEdit_path->text();
     QString type = ui->lineEdit_type->text();
     QString remark = ui->lineEdit_remark->text();
+    QString clicknumber = ui->lineEdit_clicknumber->text();
 
     //如果有引号，需要引号替换功能 加转义符
 
-    QString str = QString("update app set name = '%1', filename ='%2',path='%3',type='%4', remark='%5' where id=%6").arg(name).arg(filename).arg(path).arg(type).arg(remark).arg(id);
+    QString str = QString("update app set name = '%1', filename ='%2',path='%3',type='%4', remark='%5', clicknumber='%6' where id=%7").arg(name).arg(filename).arg(path).arg(type).arg(remark).arg(clicknumber).arg(id);
 
     if (query.exec(str) == false)
     {
@@ -993,10 +1004,18 @@ void Widget::on_pushButton_notexist_clicked()
     initleft();
 
 
-            QSqlQuery query;
+
             QString str = QString("select * from app where exist = 0");
             model.setQuery(str);
+
+
+
+
+
+
+
             ui->tableView->setModel(&model);
+
 
 
             ui->tableView->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
@@ -1012,9 +1031,9 @@ void Widget::on_pushButton_usual_clicked()
             initleft();
 
 
-            QSqlQuery query;
-            QString str = QString("SELECT * FROM app ORDER BY clicknumber desc");
-            model.setQuery(str);
+            //QSqlQuery query;
+            //QString str = QString("SELECT * FROM app ORDER BY clicknumber desc");
+            model.setQuery("SELECT * FROM app ORDER BY clicknumber desc");
             ui->tableView->setModel(&model);
 
 

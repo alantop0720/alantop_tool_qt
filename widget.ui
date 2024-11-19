@@ -114,8 +114,27 @@
              </item>
              <item>
               <widget class="QLabel" name="label_5">
+               <property name="maximumSize">
+                <size>
+                 <width>200</width>
+                 <height>16777215</height>
+                </size>
+               </property>
                <property name="text">
                 <string>remark</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_clicknumber">
+               <property name="maximumSize">
+                <size>
+                 <width>100</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>使用次数</string>
                </property>
               </widget>
              </item>
@@ -125,6 +144,18 @@
             <layout class="QVBoxLayout" name="verticalLayout_2">
              <item>
               <widget class="QLineEdit" name="lineEdit_id">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>300</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="maxLength">
+                <number>500</number>
+               </property>
                <property name="readOnly">
                 <bool>true</bool>
                </property>
@@ -135,21 +166,27 @@
              </item>
              <item>
               <widget class="QLineEdit" name="lineEdit_name">
-               <property name="minimumSize">
+               <property name="maximumSize">
                 <size>
-                 <width>500</width>
-                 <height>0</height>
+                 <width>300</width>
+                 <height>16777215</height>
                 </size>
+               </property>
+               <property name="maxLength">
+                <number>500</number>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QLineEdit" name="lineEdit_filename">
-               <property name="minimumSize">
+               <property name="maximumSize">
                 <size>
-                 <width>500</width>
-                 <height>0</height>
+                 <width>300</width>
+                 <height>16777215</height>
                 </size>
+               </property>
+               <property name="maxLength">
+                <number>500</number>
                </property>
               </widget>
              </item>
@@ -164,22 +201,41 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="lineEdit_type">
-               <property name="minimumSize">
+              <widget class="QLineEdit" name="lineEdit_remark">
+               <property name="maximumSize">
                 <size>
-                 <width>500</width>
-                 <height>0</height>
+                 <width>300</width>
+                 <height>16777215</height>
                 </size>
+               </property>
+               <property name="maxLength">
+                <number>500</number>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="lineEdit_remark">
-               <property name="minimumSize">
+              <widget class="QLineEdit" name="lineEdit_type">
+               <property name="maximumSize">
                 <size>
-                 <width>500</width>
-                 <height>0</height>
+                 <width>300</width>
+                 <height>16777215</height>
                 </size>
+               </property>
+               <property name="maxLength">
+                <number>500</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEdit_clicknumber">
+               <property name="maximumSize">
+                <size>
+                 <width>300</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="maxLength">
+                <number>500</number>
                </property>
               </widget>
              </item>
@@ -280,7 +336,6 @@
  </widget>
  <tabstops>
   <tabstop>tableView</tabstop>
-  <tabstop>lineEdit_remark</tabstop>
   <tabstop>lineEdit_filename</tabstop>
   <tabstop>lineEdit_type</tabstop>
   <tabstop>lineEdit_path</tabstop>
