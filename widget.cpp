@@ -227,21 +227,23 @@ void Widget::on_pushButton_clicked()
 // 左边 点击 查询类型
 void Widget::showClick(QModelIndex index)
 {
-    QString strTemp;
-    strTemp = index.data().toString();
+    //QString strTemp;
+    //strTemp = index.data().toString();
 
     //ui->lineEdit_type->setText(strTemp);
 
     //querytype(strTemp);
 
-    QSqlQuery query;
-    QString str = QString("select * from app where type == '%1' ").arg(strTemp);
+    //QSqlQuery query;
+    QString str = QString("select * from app where type == '%1' ORDER BY clicknumber desc").arg(index.data().toString());
     model.setQuery(str);
     ui->tableView->setModel(&model);
 
     ui->tableView->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
     ui->tableView->horizontalHeader()->setSectionResizeMode(1,QHeaderView::ResizeToContents);
     ui->tableView->horizontalHeader()->setSectionResizeMode(5,QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(6,QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(7,QHeaderView::ResizeToContents);
 
     ui->label_info->setText(str);
 
@@ -253,7 +255,6 @@ void Widget::showClick(QModelIndex index)
 
 void Widget::query(QString search)
 {
-    QSqlQuery query;
     QString str = QString("select * from app where type like '%%1%' or name like '%%1%' or filename like '%%1%' or path like '%%1%' or remark like '%%1%' ORDER BY clicknumber desc").arg(search);
     model.setQuery(str);
     ui->tableView->setModel(&model);
@@ -261,6 +262,8 @@ void Widget::query(QString search)
     ui->tableView->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
     ui->tableView->horizontalHeader()->setSectionResizeMode(1,QHeaderView::ResizeToContents);
     ui->tableView->horizontalHeader()->setSectionResizeMode(5,QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(6,QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(7,QHeaderView::ResizeToContents);
 
     ui->label_info->setText(str);
 }
@@ -584,7 +587,13 @@ void Widget::slotContextMenu(QPoint pos)
         datatemp=Imodel->data(Iindex);
         name=datatemp.toString();//name即为所选择行的第一列的值。。。
         ui->lineEdit_remark->setText(name);
+
+        Iindex = Imodel->index(index.row(),7);//index.row()为算选择的行号。1为所选中行的第一列。。
+        datatemp=Imodel->data(Iindex);
+        name=datatemp.toString();//name即为所选择行的第一列的值。。。
+        ui->lineEdit_clicknumber->setText(name);
     }
+
 
 }
 
@@ -1041,4 +1050,6 @@ void Widget::on_pushButton_usual_clicked()
             ui->tableView->horizontalHeader()->setSectionResizeMode(1,QHeaderView::ResizeToContents);
             ui->tableView->horizontalHeader()->setSectionResizeMode(5,QHeaderView::ResizeToContents);
 }
+
+
 
