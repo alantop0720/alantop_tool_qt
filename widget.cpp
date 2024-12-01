@@ -235,7 +235,7 @@ void Widget::showClick(QModelIndex index)
     //querytype(strTemp);
 
     //QSqlQuery query;
-    QString str = QString("select * from app where type == '%1' ORDER BY clicknumber desc").arg(index.data().toString());
+    QString str = QString("select * from app where type == '%1' ORDER BY CAST(clicknumber AS INTEGER) DESC").arg(index.data().toString());
     model.setQuery(str);
     ui->tableView->setModel(&model);
 
@@ -255,7 +255,7 @@ void Widget::showClick(QModelIndex index)
 
 void Widget::query(QString search)
 {
-    QString str = QString("select * from app where type like '%%1%' or name like '%%1%' or filename like '%%1%' or path like '%%1%' or remark like '%%1%' ORDER BY clicknumber desc").arg(search);
+    QString str = QString("select * from app where type like '%%1%' or name like '%%1%' or filename like '%%1%' or path like '%%1%' or remark like '%%1%' ORDER BY CAST(clicknumber AS INTEGER) DESC").arg(search);
     model.setQuery(str);
     ui->tableView->setModel(&model);
 
@@ -1041,8 +1041,8 @@ void Widget::on_pushButton_usual_clicked()
 
 
             //QSqlQuery query;
-            //QString str = QString("SELECT * FROM app ORDER BY clicknumber desc");
-            model.setQuery("SELECT * FROM app ORDER BY clicknumber desc");
+            //QString str = QString("SELECT * FROM app ORDER BY CAST(clicknumber AS INTEGER) DESC");
+            model.setQuery("SELECT * FROM app ORDER BY CAST(clicknumber AS INTEGER) DESC");
             ui->tableView->setModel(&model);
 
 
