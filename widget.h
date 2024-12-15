@@ -63,6 +63,8 @@ private slots:
 
 
 
+    void on_pushButton_del_noexist_clicked();
+
 private:
     Ui::Widget *ui;
 

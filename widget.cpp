@@ -23,6 +23,8 @@
 
 #include <QDateTime>
 
+#include <QInputDialog>
+
 #pragma execution_character_set("utf-8")
 
 
@@ -489,27 +491,43 @@ void Widget::on_pushButton_modify_clicked()
 
 void Widget::on_pushButton_2_clicked()
 {
-    QDateTime curDateTime=QDateTime::currentDateTime();
+
+    bool ok;
+    QString password = QInputDialog::getText(this, "密码输入", "请输入密码:", QLineEdit::Password, "", &ok);
+    if (ok && password == "13601994674") {
+        // 密码正确，执行后续操作，这里简单输出提示信息
+        //QMessageBox::information(this, "成功", "密码正确，继续操作。");
+        {
+            QDateTime curDateTime=QDateTime::currentDateTime();
 
 
-    if (QMessageBox::question(this,"info","请确认旧目录和新目录，确认是否更新程序目录，are you ok?", QMessageBox::Yes|QMessageBox::No) == QMessageBox::No)
-    {
-        ui->label_info->setText("no update. "+ curDateTime.toString("yyyy-MM-dd hh:mm:ss") );
-        return;
+            if (QMessageBox::question(this,"info","请确认旧目录和新目录，确认是否更新程序目录，are you ok?", QMessageBox::Yes|QMessageBox::No) == QMessageBox::No)
+            {
+                ui->label_info->setText("no update. "+ curDateTime.toString("yyyy-MM-dd hh:mm:ss") );
+                return;
+            }
+
+            //query.exec("select * from app");
+            QSqlQuery query;
+
+            if (!query.exec(ui->lineEdit_newdir->text()))
+            {
+                //ui->label_info->setText("update new dir ok."+ curDateTime.toString("yyyy-MM-dd hh:mm:ss") );
+
+                ui->label_info->setText(query.lastError().text());
+                qDebug () << "sql errror" <<  query.lastError();
+            }
+
+            ui->label_info->setText("update new dir ok."+ curDateTime.toString("yyyy-MM-dd hh:mm:ss") );
+        }
+
+    } else {
+        // 密码错误，给出提示
+        QMessageBox::warning(this, "错误", "密码错误，请重新输入。");
     }
 
-    //query.exec("select * from app");
-    QSqlQuery query;
 
-    if (!query.exec(ui->lineEdit_newdir->text()))
-    {
-        //ui->label_info->setText("update new dir ok."+ curDateTime.toString("yyyy-MM-dd hh:mm:ss") );
 
-        ui->label_info->setText(query.lastError().text());
-        qDebug () << "sql errror" <<  query.lastError();
-    }
-
-    ui->label_info->setText("update new dir ok."+ curDateTime.toString("yyyy-MM-dd hh:mm:ss") );
 
 
 
@@ -953,44 +971,54 @@ void Widget::on_pushButton_export_clicked()
 
 void Widget::on_pushButton_deltype_clicked()
 {
-    //删除分类代码
 
-    if (QMessageBox::question(this, "info", "是要选择删除的分类吗？", QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
-    {
-        return;
-    }
+        bool ok;
+        QString password = QInputDialog::getText(this, "密码输入", "请输入密码:", QLineEdit::Password, "", &ok);
+        if (ok && password == "13601994674") {
+            // 密码正确，执行后续操作，这里简单输出提示信息
+            //QMessageBox::information(this, "成功", "密码正确，继续操作。");
+            {
+                //删除分类代码
 
-    QString strText;
-    QModelIndexList indexList = ui->listView->selectionModel()->selectedIndexes();
-    if (!indexList.isEmpty())
-    {
-        QModelIndex index = indexList.first();
-        strText = index.data(Qt::DisplayRole).toString();
-        qDebug() << "The selected text is: " << strText;
+                if (QMessageBox::question(this, "info", "是要选择删除的分类吗？", QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
+                {
+                    return;
+                }
 
-
-    }
-    else
-    {
-        QMessageBox::information(this, tr("提示"), tr("未选中导出的分类"));
-        return;
-
-    }
-
-    //QSqlQuery query;
-    //query.prepare("delete from tableName where id= ?");
-    //query.addBindValue("5");
-    //query.exec();
+                QString strText;
+                QModelIndexList indexList = ui->listView->selectionModel()->selectedIndexes();
+                if (!indexList.isEmpty())
+                {
+                    QModelIndex index = indexList.first();
+                    strText = index.data(Qt::DisplayRole).toString();
+                    qDebug() << "The selected text is: " << strText;
 
 
-    QSqlQuery query;
-    query.prepare("DELETE FROM app WHERE type = :type");
-    query.bindValue(":type", strText);
-    bool result = query.exec();
-    qDebug() << "result: " << result;
+                }
+                else
+                {
+                    QMessageBox::information(this, tr("提示"), tr("未选中导出的分类"));
+                    return;
 
-    QMessageBox::information(this, "提示", tr("选择的分类已删除！"));
-    on_pushButton_clicked();
+                }
+
+                QSqlQuery query;
+                query.prepare("DELETE FROM app WHERE type = :type");
+                query.bindValue(":type", strText);
+                bool result = query.exec();
+                qDebug() << "result: " << result;
+
+                QMessageBox::information(this, "提示", tr("选择的分类已删除！"));
+                on_pushButton_clicked();
+
+
+
+
+            }
+        } else {
+            // 密码错误，给出提示
+            QMessageBox::warning(this, "错误", "密码错误，请重新输入。");
+        }
 
 
 
@@ -1012,44 +1040,73 @@ void Widget::on_pushButton_notexist_clicked()
 {
     initleft();
 
+    QString str = QString("select * from app where exist = 0");
+    model.setQuery(str);
 
+    ui->tableView->setModel(&model);
 
-            QString str = QString("select * from app where exist = 0");
-            model.setQuery(str);
-
-
-
-
-
-
-
-            ui->tableView->setModel(&model);
-
-
-
-            ui->tableView->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
-            ui->tableView->horizontalHeader()->setSectionResizeMode(1,QHeaderView::ResizeToContents);
-            ui->tableView->horizontalHeader()->setSectionResizeMode(5,QHeaderView::ResizeToContents);
-
+    ui->tableView->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(1,QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(5,QHeaderView::ResizeToContents);
 
 }
 
 
 void Widget::on_pushButton_usual_clicked()
 {
-            initleft();
+    initleft();
 
 
-            //QSqlQuery query;
-            //QString str = QString("SELECT * FROM app ORDER BY CAST(clicknumber AS INTEGER) DESC");
-            model.setQuery("SELECT * FROM app ORDER BY CAST(clicknumber AS INTEGER) DESC");
-            ui->tableView->setModel(&model);
+    //QSqlQuery query;
+    //QString str = QString("SELECT * FROM app ORDER BY CAST(clicknumber AS INTEGER) DESC");
+    model.setQuery("SELECT * FROM app ORDER BY CAST(clicknumber AS INTEGER) DESC");
+    ui->tableView->setModel(&model);
 
 
-            ui->tableView->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
-            ui->tableView->horizontalHeader()->setSectionResizeMode(1,QHeaderView::ResizeToContents);
-            ui->tableView->horizontalHeader()->setSectionResizeMode(5,QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(1,QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(5,QHeaderView::ResizeToContents);
 }
 
 
+
+
+void Widget::on_pushButton_del_noexist_clicked()
+{
+        bool ok;
+        QString password = QInputDialog::getText(this, "密码输入", "请输入密码:", QLineEdit::Password, "", &ok);
+        if (ok && password == "13601994674") {
+            // 密码正确，执行后续操作，这里简单输出提示信息
+            QSqlQuery query;
+
+
+            if (QMessageBox::question(this,"info","are you ok?", QMessageBox::Yes|QMessageBox::No) == QMessageBox::No)
+            {
+                return;
+            }
+
+            QString str = QString ("delete from app where exist = 0");
+
+            if (query.exec(str) == false)
+            {
+                qDebug() << str;
+                ui->label_info->setText(str);
+            }
+            else
+            {
+                qDebug() << "delete ok";
+                ui->label_info->setText("delete ok");
+            }
+
+            initleft();
+
+            querytype(ui->lineEdit_type->text());
+
+        } else {
+            // 密码错误，给出提示
+            QMessageBox::warning(this, "错误", "密码错误，请重新输入。");
+        }
+
+
+}
 

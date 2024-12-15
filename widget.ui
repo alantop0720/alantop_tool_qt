@@ -300,6 +300,13 @@
              </property>
             </widget>
            </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_del_noexist">
+             <property name="text">
+              <string>删除本机不存在的应用记录</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </item>
         </layout>
