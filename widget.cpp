@@ -25,6 +25,18 @@
 
 #include <QInputDialog>
 
+#include <ctime>
+
+#include "filecheckerthread.h"
+
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <string>
+#include <ctime>
+#include <QDebug>
+#include <QString>
+
 #pragma execution_character_set("utf-8")
 
 
@@ -52,7 +64,7 @@ Widget::Widget(QWidget *parent)
 
 
     initdb();
-    checkFilesAndUpdateExistField();
+    //checkFilesAndUpdateExistField();
 
 
 
@@ -63,10 +75,55 @@ Widget::Widget(QWidget *parent)
 
 
     setAcceptDrops(true);
+    std::string compileDate = __DATE__;
+    // 原始日期格式：Mmm dd yyyy，例如：Dec 24 2024
 
-    setWindowTitle("alantop_tool_qt5 2024.11.19");
+    std::tm tm = {};
+    std::istringstream iss(compileDate);
+    iss >> std::get_time(&tm, "%b %d %Y");
+    if (iss.fail()) {
+        std::cerr << "Failed to parse date" << std::endl;
+        return ;
+    }
 
-    ui->lineEdit_newdir->setText("UPDATE app SET path = REPLACE(path, 'D:/alantop_dir/Alantop_Tool/Tools/', 'd:/newdir/') WHERE id = 105");
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%Y-%m-%d");
+    std::string formattedDate = oss.str();
+
+    // 拼接最终要设置的窗口标题字符串
+    std::string fullTitle = "alantop_tool_qt5 " + formattedDate;
+
+    // 将C++的string类型转换为QString类型，用于Qt的窗口标题设置
+    QString qtTitle = QString::fromStdString(fullTitle);
+
+    qDebug() << qtTitle;
+
+    // 设置窗口标题
+    setWindowTitle(qtTitle);
+
+
+
+    //当目录不是规定目录设置新目录
+
+    // 获取应用程序当前运行目录
+    QString appDir = QCoreApplication::applicationDirPath();
+    QDir dir(appDir);
+    // 切换到父目录
+    if (dir.cdUp()) {
+        QString parentDir = dir.absolutePath();
+        qDebug() << "应用程序运行的父目录: " << parentDir;
+        QString sql_dir = parentDir + "/Tools/";
+        qDebug() << sql_dir;
+        QString baseString = "UPDATE app SET path = REPLACE(path, 'D:/alantop_dir/Alantop_Tool/Tools/', '%1') ";
+        QString result = baseString.arg(sql_dir);
+        ui->lineEdit_newdir->setText(result);
+
+    } else {
+        ui->lineEdit_newdir->setText("UPDATE app SET path = REPLACE(path, 'D:/alantop_dir/Alantop_Tool/Tools/', 'd:/newdir/') ");
+        qDebug() << "无法切换到父目录";
+    }
+
+
 
 
     ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -97,6 +154,7 @@ Widget::~Widget()
     delete ui;
 }
 
+/*
 void Widget::checkFilesAndUpdateExistField()
 {
 
@@ -131,7 +189,7 @@ void Widget::checkFilesAndUpdateExistField()
             qDebug() << "更新 exist 字段失败: " << updateQuery.lastError().text();
         }
     }
-}
+}*/
 
 void Widget::initdb()
 {
@@ -389,6 +447,8 @@ void Widget::on_tableView_clicked(const QModelIndex &index)
     QVariant datatemp;
     QString name;
 
+    QString type;
+
 
     Iindex = Imodel->index(index.row(),0);//index.row()为算选择的行号。1为所选中行的第一列。。
     datatemp=Imodel->data(Iindex);
@@ -416,8 +476,8 @@ void Widget::on_tableView_clicked(const QModelIndex &index)
 
     Iindex = Imodel->index(index.row(),4);//index.row()为算选择的行号。1为所选中行的第一列。。
     datatemp=Imodel->data(Iindex);
-    name=datatemp.toString();//name即为所选择行的第一列的值。。。
-    ui->lineEdit_type->setText(name);
+    type=datatemp.toString();//name即为所选择行的第一列的值。。。
+    ui->lineEdit_type->setText(type);
 
     Iindex = Imodel->index(index.row(),5);//index.row()为算选择的行号。1为所选中行的第一列。。
     datatemp=Imodel->data(Iindex);
@@ -430,17 +490,33 @@ void Widget::on_tableView_clicked(const QModelIndex &index)
     ui->lineEdit_clicknumber->setText(name);
 
 
+    if (type == "dir")
+    {
+        QDir dir(app_path);
+        if (dir.exists()) {
+            ui->label_info->setText("目录存在");
+            ui->label_info->setStyleSheet("color: green; font - weight: bold;");
+            return;
+        } else {
+            ui->label_info->setText("目录不存在");
+            ui->label_info->setStyleSheet("color: red; font - weight: bold;");
+            return;
+        }
+    }
+
+
 
 
 
 
     QFileInfo fileInfo(app_path);
-    if(!fileInfo.isFile())
-    {
+    if (fileInfo.isFile()) {
+        ui->label_info->setText("文件存在");
+        ui->label_info->setStyleSheet("color: green; font - weight: bold;");
+    } else {
         ui->label_info->setText("文件不存在");
-        return;
+        ui->label_info->setStyleSheet("color: red; font - weight: bold;");
     }
-
 
 
 }
@@ -492,9 +568,15 @@ void Widget::on_pushButton_modify_clicked()
 void Widget::on_pushButton_2_clicked()
 {
 
+
+
+
+
+
+
     bool ok;
     QString password = QInputDialog::getText(this, "密码输入", "请输入密码:", QLineEdit::Password, "", &ok);
-    if (ok && password == "13601994674") {
+    if (ok && password == "136") {
         // 密码正确，执行后续操作，这里简单输出提示信息
         //QMessageBox::information(this, "成功", "密码正确，继续操作。");
         {
@@ -939,6 +1021,11 @@ void Widget::on_pushButton_export_clicked()
                                                     "/home",
                                                     tr("Text Files (*.txt)"));//按行读取文件
 
+    if (fileName.isEmpty()) {
+        QMessageBox::information(this, "提示", tr("未选择文件"));
+        return;
+    }
+
 
     QFile file(fileName);
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -974,7 +1061,7 @@ void Widget::on_pushButton_deltype_clicked()
 
         bool ok;
         QString password = QInputDialog::getText(this, "密码输入", "请输入密码:", QLineEdit::Password, "", &ok);
-        if (ok && password == "13601994674") {
+        if (ok && password == "136") {
             // 密码正确，执行后续操作，这里简单输出提示信息
             //QMessageBox::information(this, "成功", "密码正确，继续操作。");
             {
@@ -1038,6 +1125,31 @@ void Widget::on_lineEdit_search_textChanged(const QString &arg1)
 
 void Widget::on_pushButton_notexist_clicked()
 {
+    FileCheckerThread *thread = new FileCheckerThread(db, this);
+    connect(thread, &FileCheckerThread::updateLabel, this, [this](const QString &text) {
+        ui->label_info->setText(text);
+    });
+
+
+
+
+    connect(thread, &FileCheckerThread::finished, thread, &FileCheckerThread::deleteLater);
+
+    connect(thread, &FileCheckerThread::selectTable, this, &Widget::updateTableAfterThread);
+
+
+    ui->label_info->setText("开始更新");
+    thread->start();
+
+
+
+
+
+
+}
+
+void Widget::updateTableAfterThread()
+{
     initleft();
 
     QString str = QString("select * from app where exist = 0");
@@ -1048,7 +1160,6 @@ void Widget::on_pushButton_notexist_clicked()
     ui->tableView->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
     ui->tableView->horizontalHeader()->setSectionResizeMode(1,QHeaderView::ResizeToContents);
     ui->tableView->horizontalHeader()->setSectionResizeMode(5,QHeaderView::ResizeToContents);
-
 }
 
 
@@ -1075,7 +1186,7 @@ void Widget::on_pushButton_del_noexist_clicked()
 {
         bool ok;
         QString password = QInputDialog::getText(this, "密码输入", "请输入密码:", QLineEdit::Password, "", &ok);
-        if (ok && password == "13601994674") {
+        if (ok && password == "136") {
             // 密码正确，执行后续操作，这里简单输出提示信息
             QSqlQuery query;
 

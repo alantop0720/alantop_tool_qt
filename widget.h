@@ -65,6 +65,8 @@ private slots:
 
     void on_pushButton_del_noexist_clicked();
 
+    void updateTableAfterThread();
+
 private:
     Ui::Widget *ui;
 
