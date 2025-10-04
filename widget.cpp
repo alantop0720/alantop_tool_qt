@@ -742,6 +742,10 @@ void Widget::on_tableView_doubleClicked(const QModelIndex &index)
 {
     //左键双击 启动程序
 
+
+    ui->label_info->setText("启动程序");
+
+
     //读取数据到lineedit控件
     QAbstractItemModel *Imodel=ui->tableView->model();
     QModelIndex Iindex ;
